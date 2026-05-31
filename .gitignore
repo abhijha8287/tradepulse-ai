@@ -1,0 +1,13 @@
+node_modules
+.next
+__pycache__
+*.pyc
+.venv
+.env
+postgres_data
+.mypy_cache
+.pytest_cache
+dist
+coverage
+.chrome-preview*
+preview-*.png
