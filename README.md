@@ -1,54 +1,76 @@
 # TradePulse AI
 
-Production-ready starter for a professional trader dashboard that compresses global markets, Indian markets, macro news, volatility, institutional flows, options context, sentiment, watchlists, alerts, and AI summaries into a fast pre-market and intraday command center.
+A trader's dashboard that brings global and Indian markets, high-impact news, institutional flows, watchlists, alerts and short AI summaries onto one screen for pre-market and intraday use.
 
-## Stack
+## Why this exists
+Before and during the trading day, the information a trader needs is spread across many sites. This is a starter for collecting it in one place, refreshed automatically.
 
-- Frontend: Next.js 15 App Router, TypeScript, Tailwind CSS, TanStack Query, Recharts, Framer Motion-ready UI
-- Backend: FastAPI, SQLAlchemy, Alembic, PostgreSQL, Redis, Celery
-- AI: OpenAI/LangChain integration boundary with deterministic fallback summaries
-- Auth: Clerk-ready environment and JWT verification boundary
-- Ops: Docker Compose, Nginx, Sentry-ready logging, GitHub Actions
+## What it does
+- Polls public live sources first: NSE India (index snapshots, FII/DII flows, quotes), SEBI RSS, Moneycontrol RSS and Zerodha Pulse
+- Shows global and Indian market cards, VIX, open interest and expected move
+- Filters news down to high-impact items
+- Produces pre-market, intraday and end-of-day summaries, with a rule-based fallback when no OpenAI key is set
+- Supports watchlists and alerts; caches payloads briefly and refreshes every 30 seconds
 
-## Run Locally
+## Project structure
+```
+tradepulse-ai/
+├── backend/
+│   ├── app/api/       FastAPI routes (/api/v1)
+│   ├── app/services/  Data source adapters and summaries
+│   ├── app/workers/   Celery background jobs
+│   ├── app/models/    Database tables
+│   ├── app/schemas/   Response models
+│   ├── app/db/        Database session
+│   ├── app/core/      Settings and auth
+│   └── alembic/       Migrations
+├── frontend/
+│   ├── app/           Pages: global, india, news, insights, watchlist, alerts, admin
+│   ├── components/    Dashboard widgets
+│   └── lib/           API client
+├── infra/             Nginx config
+├── .github/workflows/ CI pipeline
+├── docker-compose.yml Full local stack
+└── .env.example       Required settings
+```
 
-1. Copy `.env.example` to `.env`.
-2. Start everything:
-
+## Getting started
+Requirements: Docker and Docker Compose (or Python 3.11+ and Node.js 18+).
 ```bash
+git clone https://github.com/abhijha8287/tradepulse-ai.git
+cd tradepulse-ai
+cp .env.example .env
 docker compose up --build
 ```
+| Service | Address |
+|:--|:--|
+| Frontend | http://localhost:3000 |
+| API docs | http://localhost:8000/docs |
+| Nginx gateway | http://localhost:8080 |
 
-3. Open:
+## Configuration
+| Variable | Purpose |
+|:--|:--|
+| `DATABASE_URL`, `REDIS_URL` | Data stores |
+| `CORS_ORIGINS`, `NEXT_PUBLIC_API_URL` | Frontend and API addresses |
+| `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_JWKS_URL` | Optional Clerk auth |
+| `OPENAI_API_KEY` | Optional AI summaries |
+| `ALPHA_VANTAGE_API_KEY`, `NEWSAPI_KEY`, `FMP_API_KEY` | Optional extra data providers |
+| `SENTRY_DSN` | Optional error tracking |
+| `APP_ENV` | Environment name |
 
-- Frontend: http://localhost:3000
-- Backend docs: http://localhost:8000/docs
-- Nginx gateway: http://localhost:8080
+## Main endpoints
+| Path | Returns |
+|:--|:--|
+| `GET /api/v1/dashboard` | Full dashboard payload |
+| `GET /api/v1/markets/global` | Global market cards |
+| `GET /api/v1/markets/india` | NIFTY, VIX, flows, OI, expected move |
+| `GET /api/v1/news/high-impact` | High-impact news |
+| `GET /api/v1/ai/insights` | Pre-market, intraday, EOD summaries |
+| `GET /api/v1/admin/health` | Service status |
 
-For local non-Docker development:
-
-```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-```
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## API Modules
-
-- `GET /api/v1/dashboard` complete dashboard payload
-- `GET /api/v1/markets/global` global market cards
-- `GET /api/v1/markets/india` NIFTY, VIX, flows, OI, expected move
-- `GET /api/v1/news/high-impact` filtered high-impact news
-- `GET /api/v1/ai/insights` pre-market, intraday, EOD summaries
-- `GET /api/v1/admin/health` operational status
+## Tech stack
+Next.js 15, TypeScript, Tailwind CSS, TanStack Query, Recharts, Python, FastAPI, SQLAlchemy, Alembic, PostgreSQL, Redis, Celery, Nginx, Docker, GitHub Actions
 
 ## Data Source Architecture
 
